@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import time
-from openai import OpenAI
 import os
 import logging
 import boto3
@@ -28,7 +27,7 @@ def get_latest_source_from_db(source_id):
         default=None
     )
 
-DEFAULT_MAX_PAGES = 1
+DEFAULT_MAX_PAGES = 2
 
 def scrape_erewash_council_news(base_url):
     headers = {
@@ -89,9 +88,6 @@ def get_article_text(link, headers):
     logger.info("Scraping article: %s (%s)", title, full_url)
     article_content = scrape_article_content(full_url, headers)
     return article_content, full_url
-    
-    # Respectful delay between requests
-    time.sleep(1)
 
 
 def scrape_article_content(url, headers):

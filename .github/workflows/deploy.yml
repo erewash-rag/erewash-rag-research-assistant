@@ -5,9 +5,28 @@ on:
     branches: [ main ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run tests
+      run: pytest lambda_function_test.py
+
   deploy:
     runs-on: ubuntu-latest
-    
+    needs: test
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -25,36 +44,36 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t 318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-copy-writer:latest .
+        docker build -t 318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-research-assistant:latest .
 
     - name: Push Docker image
       run: |
-        docker push 318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-copy-writer:latest
+        docker push 318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-research-assistant:latest
         
     - name: Create deployment package
       run: |
-        zip -r erewash-rag-copy-writer.zip lambda_function.py articles.json
+        zip -r erewash-rag-research-assistant.zip lambda_function.py articles.json
         
     - name: Upload to S3
       run: |
-        aws s3 cp erewash-rag-copy-writer.zip s3://erewash-rag-server-code/erewash-rag-copy-writer.zip
+        aws s3 cp erewash-rag-research-assistant.zip s3://erewash-rag-server-code/erewash-rag-research-assistant.zip
         
     - name: Update Lambda function to use latest image
       run: |
         aws lambda update-function-code \
-          --function-name erewash-rag-copy-writer \
-          --image-uri 318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-copy-writer:latest \
+          --function-name erewash-rag-research-assistant \
+          --image-uri 318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-research-assistant:latest \
           --region eu-west-2 
           
     - name: Wait for update to complete
       run: |
         aws lambda wait function-updated \
-          --function-name erewash-rag-copy-writer \
+          --function-name erewash-rag-research-assistant \
           --region eu-west-2
           
     - name: Publish new version
       run: |
         aws lambda publish-version \
-          --function-name erewash-rag-copy-writer \
+          --function-name erewash-rag-research-assistant \
           --description "Deployed from GitHub Actions" \
           --region eu-west-2 
