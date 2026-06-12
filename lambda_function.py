@@ -48,7 +48,7 @@ def scrape_erewash_council_news(base_url):
 
         response = requests.get(page_url, headers=headers)
         if response.status_code != 200:
-            logger.error("Failed to retrieve news page: HTTP %s", response.status_code)
+            logger.error("Failed to retrieve \"%s\" page: HTTP %s",page_url, response.status_code)
             break
 
         soup = BeautifulSoup(response.text, 'html.parser')
