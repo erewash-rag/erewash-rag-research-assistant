@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import time
 import os
 import logging
 import boto3
@@ -136,7 +135,8 @@ def lambda_handler(event, _context):
             "sourceId": "erewash_council_news",
             "dateAdded": datetime.now().strftime("%Y-%m-%d"),
             "url": url,
-            "content": content or ""
+            "content": content or "",
+            "writtenAbout": False
         })
     logger.info("Added %d sources to the DB", len(sources))
 
