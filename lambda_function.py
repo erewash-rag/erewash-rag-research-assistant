@@ -124,7 +124,11 @@ def get_local_property(key):
         return None
 
 def lambda_handler(event, _context):
-    erewash_council_news_url = event.get('erewash_council_news_url') or get_property('erewash_council_news_url')
+    erewash_council_news_url = event.get('erewash_council_news_url')
+    
+    if erewash_council_news_url is None:
+        erewash_council_news_url = get_property('erewash_council_news_url')
+
     sources = scrape_erewash_council_news(erewash_council_news_url)
     for content, url in sources:
         table.put_item(Item={
@@ -134,6 +138,7 @@ def lambda_handler(event, _context):
             "url": url,
             "content": content or ""
         })
+    logger.info("Added %d sources to the DB", len(sources))
 
 
 if __name__ == "__main__":
