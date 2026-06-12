@@ -30,7 +30,11 @@ DEFAULT_MAX_PAGES = 2
 
 def scrape_erewash_council_news(base_url):
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/137.0.0.0 Safari/537.36"
+            )
     }
 
     max_pages_prop = get_property('erewash_council_max_pages')
