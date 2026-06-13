@@ -151,7 +151,7 @@ def lambda_handler(event, _context):
         sources_saved = sources_saved + 1
 
     logger.info("Added %d sources to the DB", sources_saved)
-
+    return {"statusCode": 200, "body": f"Added {sources_saved} sources to the DB"}
 
 if __name__ == "__main__":
     lambda_handler({}, None)
