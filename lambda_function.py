@@ -7,7 +7,7 @@ from boto3.dynamodb.conditions import Attr
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(os.environ.get("logging_level", "INFO"))
 
 client = boto3.client('dynamodb', region_name='eu-west-2')
 dynamodb = boto3.resource("dynamodb", region_name='eu-west-2')
@@ -42,13 +42,13 @@ def scrape_erewash_council_news(base_url):
 
     latest_db = get_latest_source_from_db("erewash_council_news")
     latest_url = latest_db.get('url') if latest_db else None
-    logger.info("Latest DB article URL: %s", latest_url)
+    logger.debug("Latest DB article URL: %s", latest_url)
 
     articles = []
 
     for page in range(max_pages):
         page_url = f"{base_url}?page={page}" if page > 0 else base_url
-        logger.info("Fetching news listing page %d: %s", page, page_url)
+        logger.debug("Fetching news listing page %d: %s", page, page_url)
 
         response = requests.get(page_url, headers=headers)
         if response.status_code != 200:
@@ -57,7 +57,7 @@ def scrape_erewash_council_news(base_url):
 
         soup = BeautifulSoup(response.text, 'html.parser')
         news_links = soup.select('h2 a')
-        logger.info("Found %d article links on page %d", len(news_links), page)
+        logger.debug("Found %d article links on page %d", len(news_links), page)
 
         done = False
         for link in news_links:
@@ -65,7 +65,7 @@ def scrape_erewash_council_news(base_url):
             full_url = f"https://www.erewash.gov.uk{href}" if href.startswith('/') else href
 
             if latest_url and full_url == latest_url:
-                logger.info("Reached latest known article (%s), stopping scrape", full_url)
+                logger.debug("Reached latest known article (%s), stopping scrape", full_url)
                 done = True
                 break
 
@@ -74,7 +74,7 @@ def scrape_erewash_council_news(base_url):
         if done or not news_links:
             break
 
-    logger.info("Scraped %d articles total", len(articles))
+    logger.debug("Scraped %d articles total", len(articles))
     return articles
         
 
@@ -88,7 +88,7 @@ def get_article_text(link, headers):
     else:
         full_url = href
 
-    logger.info("Scraping article: %s (%s)", title, full_url)
+    logger.debug("Scraping article: %s (%s)", title, full_url)
     article_content = scrape_article_content(full_url, headers)
     return article_content, full_url
 
@@ -133,6 +133,7 @@ def lambda_handler(event, _context):
         erewash_council_news_url = get_property('erewash_council_news_url')
 
     sources = scrape_erewash_council_news(erewash_council_news_url)
+    sources_saved = 0
     for content, url in sources:
 
         get_item_response = table.get_item(Key={"id": url, "sourceId": "erewash_council_news"})
@@ -146,7 +147,10 @@ def lambda_handler(event, _context):
             "content": content or "",
             "writtenAbout": False
         })
-    logger.info("Added %d sources to the DB", len(sources))
+        logger.debug("Saved source to DB: %s", url)
+        sources_saved = sources_saved + 1
+
+    logger.info("Added %d sources to the DB", sources_saved)
 
 
 if __name__ == "__main__":
