@@ -16,8 +16,8 @@ def mock_dynamodb_articles():
         dynamodb = boto3.resource('dynamodb', region_name='eu-west-2')
         table = dynamodb.create_table(
             TableName='sources',
-            KeySchema=[{'AttributeName': 'id', 'KeyType': 'HASH'}],
-            AttributeDefinitions=[{'AttributeName': 'id', 'AttributeType': 'S'}],
+            KeySchema=[{'AttributeName': 'id', 'KeyType': 'HASH'}, {'AttributeName': 'sourceId', 'KeyType': 'RANGE'}],
+            AttributeDefinitions=[{'AttributeName': 'id', 'AttributeType': 'S'}, {'AttributeName': 'sourceId', 'AttributeType': 'S'}],
             ProvisionedThroughput={'ReadCapacityUnits': 1, 'WriteCapacityUnits': 1}
         )
         table.wait_until_exists()

@@ -135,7 +135,7 @@ def lambda_handler(event, _context):
     sources = scrape_erewash_council_news(erewash_council_news_url)
     for content, url in sources:
 
-        get_item_response = table.get_item(Key={"id": url})
+        get_item_response = table.get_item(Key={"id": url, "sourceId": "erewash_council_news"})
         if "Item" in get_item_response and get_item_response["Item"] is not None:
             continue
         table.put_item(Item={
