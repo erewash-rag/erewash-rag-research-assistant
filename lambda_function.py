@@ -6,8 +6,8 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 from datetime import datetime
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 client = boto3.client('dynamodb', region_name='eu-west-2')
 dynamodb = boto3.resource("dynamodb", region_name='eu-west-2')
