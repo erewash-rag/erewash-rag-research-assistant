@@ -12,7 +12,7 @@ logging.getLogger().setLevel(os.environ.get("logging_level", "INFO"))
 
 def lambda_handler(event, _context):
     total_saved = 0
-    if event["erewash_council_news_url"] is not None:
+    if event.get("erewash_council_news_url") is not None:
         perform_scrape(erewash_council_news, event["erewash_council_news_url"])
     else:
         for scraper in SCRAPERS:
