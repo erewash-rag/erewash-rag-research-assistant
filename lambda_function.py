@@ -21,7 +21,7 @@ def lambda_handler(event, _context):
     logger.info("Added %d sources total to the DB", total_saved)
     return {"statusCode": 200, "body": f"Added {total_saved} sources to the DB"}
 
-def perform_scrape(scraper, single_url):
+def perform_scrape(scraper, single_url=None):
     sources_per_scraper = 0
     logger.info("Scraping from %s...", scraper.SOURCE_ID)
     base_url = single_url or get_property(f"{scraper.SOURCE_ID}_url")
