@@ -8,9 +8,9 @@ from db import get_latest_source
 
 logger = logging.getLogger(__name__)
 
-SOURCE_ID = "erewash_council_news"
-_DEFAULT_MAX_PAGES = 2
-_BASE_DOMAIN = "https://www.erewash.gov.uk"
+SOURCE_ID = "derbyshire_live"
+_DEFAULT_MAX_PAGES = 1
+_BASE_DOMAIN = "https://www.derbytelegraph.co.uk/news/"
 
 _HEADERS = {
     "User-Agent": (
@@ -19,17 +19,17 @@ _HEADERS = {
 }
 
 def scrape(base_url):
-    max_pages_prop = get_property('erewash_council_max_pages')
+    max_pages_prop = 1 #get_property('derbyshire_live_max_pages')
     max_pages = int(max_pages_prop) if max_pages_prop else _DEFAULT_MAX_PAGES
 
-    latest_db = get_latest_source(SOURCE_ID)
+    latest_db = None #get_latest_source(SOURCE_ID)
     latest_url = latest_db.get('url') if latest_db else None
     logger.debug("Latest DB article URL: %s", latest_url)
 
     articles = []
 
     for page in range(max_pages):
-        page_url = f"{base_url}?page={page}" if page > 0 else base_url
+        page_url = f"{base_url}?pageNumber={page}" if page > 1 else base_url
         logger.debug("Fetching news listing page %d: %s", page, page_url)
 
         response = requests.get(page_url, headers=_HEADERS)
@@ -38,7 +38,7 @@ def scrape(base_url):
             break
 
         soup = BeautifulSoup(response.text, 'html.parser')
-        news_links = soup.select('h2 a')
+        news_links = soup.select('div.teaser-text a')
         logger.debug("Found %d article links on page %d", len(news_links), page)
 
         done = False
@@ -72,12 +72,15 @@ def _scrape_article_content(url):
     try:
         res = requests.get(url, headers=_HEADERS)
         soup = BeautifulSoup(res.text, 'html.parser')
-        content_div = soup.find('div', class_='item-page') or soup.find('article')
-        if content_div:
-            paragraphs = content_div.find_all('p')
+        content = soup.find('article', id='article-body') or soup.find('div', class_='article-body')
+        if content:
+            paragraphs = content.find_all('p')
             logger.debug("Extracted %d paragraphs from %s", len(paragraphs), url)
             return "\n".join(p.get_text(strip=True) for p in paragraphs)
         else:
             logger.warning("Could not find article body at %s", url)
     except Exception as e:
         logger.error("Error scraping %s: %s", url, e)
+
+
+scrape(_BASE_DOMAIN)
