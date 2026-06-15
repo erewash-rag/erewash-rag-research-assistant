@@ -12,6 +12,8 @@ SOURCE_ID = "derbyshire_live"
 _DEFAULT_MAX_PAGES = 1
 _BASE_DOMAIN = "https://www.derbytelegraph.co.uk/news/"
 
+KEYWORDS = ["erewash", "Erewash", "long eaton", "Long Eaton", "ilkeston", "Ilkeston"]
+
 _HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
@@ -51,7 +53,9 @@ def scrape(base_url):
                 done = True
                 break
 
-            articles.append(_get_article(link))
+            article = _get_article(link)
+            if article is not None:
+                articles.append(article)
 
         if done or not news_links:
             break
@@ -65,7 +69,14 @@ def _get_article(link):
     full_url = f"{_BASE_DOMAIN}{href}" if href.startswith('/') else href
     logger.debug("Scraping article: %s (%s)", link.get_text(strip=True), full_url)
     content = _scrape_article_content(full_url)
-    return content, full_url
+
+    if any(ext in content for ext in KEYWORDS):
+        logger.debug("Article: %s accepted from %s because it has a relevant keyword", full_url, SOURCE_ID)
+        return content, full_url
+
+    logger.debug("Article rejected from %s because it lacks a relevant keyword", SOURCE_ID)
+
+    return None
 
 
 def _scrape_article_content(url):
