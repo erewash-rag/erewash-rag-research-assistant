@@ -70,7 +70,7 @@ def _get_article(link):
     logger.debug("Scraping article: %s (%s)", link.get_text(strip=True), full_url)
     content = _scrape_article_content(full_url)
 
-    if any(ext in content for ext in KEYWORDS):
+    if any(keyword in content for keyword in KEYWORDS):
         logger.debug("Article: %s accepted from %s because it has a relevant keyword", full_url, SOURCE_ID)
         return content, full_url
 
